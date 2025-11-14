@@ -37,6 +37,23 @@ public:
     // Verifica si la lista de inventario está vacía.
     // Retorna true si está vacía, false en caso contrario.
     bool estaVacia();
+
+
+    //  <------------>
+    //Actualiza la cantidad de "Stock" en el inventario
+    //Retorna "True" si la cantidad fue actualizada
+    bool modificarCantidad(string codigo, int cantidad);
+
+    //Actualiza el "Precio" del producto
+    //Retorna "True" si el precio fue actualizado
+    bool modificarPrecio(string codigo, double nuevoPrecio);
+
+    //Calcula el valor total del inventario
+    //Retorna la cantidad total de todo el inventario
+    double calcularValorTotal();
+
+    //Genera un reporte del inventario, esto incluye; Stock, valor total, etc.
+    void generarReporte();
 };
 
 #endif // LISTA_INVENTARIO_H

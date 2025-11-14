@@ -124,10 +124,10 @@ void ListaInventario::mostrarInventario() {
     while (actual != nullptr) {
         // Imprimimos la información de cada producto con el formato especificado.
         cout << contador << ". "
-             << "Codigo: " << actual->producto.codigo
-             << " | Nombre: " << actual->producto.nombre
-             << " | Cantidad: " << actual->producto.cantidad
-             << " | Precio: $" << fixed << setprecision(2) << actual->producto.precio << endl; // fixed y setprecision para formato de precio
+            << "Codigo: " << actual->producto.codigo
+            << " | Nombre: " << actual->producto.nombre
+            << " | Cantidad: " << actual->producto.cantidad
+            << " | Precio: $" << fixed << setprecision(2) << actual->producto.precio << endl; // fixed y setprecision para formato de precio
 
         actual = actual->siguiente; // Avanzamos al siguiente nodo.
         contador++;                 // Incrementamos el contador para el siguiente producto.
@@ -139,4 +139,95 @@ void ListaInventario::mostrarInventario() {
 // Retorna true si el puntero 'primero' es nullptr (lista vacía), false en caso contrario.
 bool ListaInventario::estaVacia() {
     return primero == nullptr;
+}
+
+// <--------------->
+
+//Implimentacion del metodo modificarCantidad; Realiza la actualizacion del Stock.
+bool ListaInventario::modificarCantidad(string codigo, int nuevaCantidad) {
+    // Primero buscamos el producto por código.
+    Producto* productoEncontrado = buscar(codigo);
+
+    if (productoEncontrado != nullptr) {
+        // Si se encuentra el producto, se actualizia el atributo "Cantidad"
+        if (nuevaCantidad >= 0) {
+            productoEncontrado->cantidad = nuevaCantidad;
+            cout << "Stock de '" << productoEncontrado->nombre 
+                << "' actualizado a: " << nuevaCantidad << " unidades." << endl;
+            return true;
+        } else {
+            cout << "Error: La cantidad no puede ser negativa." << endl;
+            return false;
+        }
+    } else {
+        // En caso que no se encuentre el producto, se muestra este mensaje
+        cout << "Producto con codigo '" << codigo << "' no fue encontrado." << endl;
+        return false;
+    }
+}
+
+//Implementacion del metodo modificarPrecio
+bool ListaInventario::modificarPrecio(string codigo, double nuevoPrecio) {
+    // Se busca el producto por medio de su codigo
+    Producto* productoEncontrado = buscar(codigo);
+
+    if (productoEncontrado != nullptr) {
+        // En caso de encontrarlo, se modifica el precio.
+        if (nuevoPrecio > 0.0) {
+            productoEncontrado->precio = nuevoPrecio;
+            cout << fixed << setprecision(2);
+            cout << "Precio de '" << productoEncontrado->nombre 
+                << "' actualizado a: $" << nuevoPrecio << endl;
+            return true;
+        } else {
+            cout << "Error: El precio debe ser un valor positivo." << endl;
+            return false;
+        }
+    } else {
+        // 3. En caso de no encontrar el productor, se muestra un mensaje.
+        cout << "Producto con codigo '" << codigo << "' no fue encontrado." << endl;
+        return false;
+    }
+}
+
+// Implementacion del metodo calcularValorTotal
+double ListaInventario::calcularValorTotal() {
+    double valorTotal = 0.0;
+    Nodo* actual = primero; 
+
+    // Recorre toda la lista
+    while (actual != nullptr) {
+        // Fórmula: Valor = Cantidad * Precio
+        valorTotal += actual->producto.cantidad * actual->producto.precio;
+        actual = actual->siguiente;
+    }
+
+    return valorTotal;
+}
+
+// Implementacion del metodo generarReporte
+void ListaInventario::generarReporte() {
+    if (estaVacia()) {
+        cout << "El inventario esta vacio. No se puede generar un reporte." << endl;
+        return;
+    }
+
+    Nodo* actual = primero;
+    int totalProductosDiferentes = 0;
+    int totalUnidades = 0;
+
+    // Primer recorrido para calcular unidades y cantidad de ítems
+    while (actual != nullptr) {
+        totalProductosDiferentes++;
+        totalUnidades += actual->producto.cantidad;
+        actual = actual->siguiente;
+    }
+
+    double valorTotal = calcularValorTotal(); // Usamos el método anterior
+
+    cout << "\nReporte de Inventario" << endl;
+    cout << "  - Total de productos diferentes (ítems): " << totalProductosDiferentes << endl;
+    cout << "  - Total de unidades en stock: " << totalUnidades << endl;
+    cout << fixed << setprecision(2);
+    cout << "  - Valor total del inventario: $" << valorTotal << endl;
 }
