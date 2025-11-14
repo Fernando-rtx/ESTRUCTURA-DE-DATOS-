@@ -1,0 +1,111 @@
+# Proceso de Compilación y Enlazado del Sistema de Inventario
+
+Esta guía describe los pasos necesarios para compilar el código fuente del sistema de inventario, crear una librería estática y enlazarla con un programa principal para generar un ejecutable final.
+
+## 1. Estructura de Archivos del Proyecto
+
+Para entender el proceso, es importante conocer la organización de nuestro proyecto:
+
+```
+proyecto_inventario/
+├── include/
+│   ├── Producto.h
+│   ├── Nodo.h
+│   └── ListaInventario.h
+├── src/
+│   ├── Producto.cpp
+│   └── ListaInventario.cpp
+├── lib/
+│   └── (Aquí se creará libinventario.a)
+├── obj/
+│   └── (Aquí se crearán los archivos .o)
+├── main.cpp
+└── Makefile
+```
+
+- **`include/`**: Contiene los archivos de encabezado (`.h`) con las declaraciones de nuestras clases.
+- **`src/`**: Contiene los archivos de implementación (`.cpp`) con la lógica de las clases.
+- **`lib/`**: Directorio de destino para nuestra librería estática final.
+- **`obj/`**: Directorio temporal para los archivos objeto compilados.
+- **`main.cpp`**: El programa principal que utilizará nuestra librería.
+- **`Makefile`**: Archivo que automatiza todo el proceso de compilación.
+
+## 2. Pasos para Compilar y Enlazar
+
+A continuación se detallan los comandos manuales. Si tienes el `Makefile` configurado, puedes saltar a la sección de automatización.
+
+### Paso 1: Compilar los Archivos Fuente a Archivos Objeto (`.o`)
+
+El primer paso es convertir nuestros archivos de implementación `.cpp` en "archivos objeto" (`.o`). Un archivo objeto contiene el código máquina de un solo archivo fuente, pero todavía no es un programa ejecutable.
+
+**Comando:**
+```bash
+# Compilar Producto.cpp
+g++ -Wall -g -std=c++11 -Iinclude -c src/Producto.cpp -o obj/Producto.o
+
+# Compilar ListaInventario.cpp
+g++ -Wall -g -std=c++11 -Iinclude -c src/ListaInventario.cpp -o obj/ListaInventario.o
+```
+
+**Explicación de los flags:**
+- `-c`: Le dice al compilador que se detenga después de generar el archivo objeto, sin intentar crear un ejecutable.
+- `-Iinclude`: Añade el directorio `include/` a la ruta de búsqueda de archivos de encabezado. Es crucial para que el compilador encuentre `Producto.h`, `Nodo.h`, etc.
+- `-Wall`: Activa todas las advertencias de compilación, una buena práctica para detectar posibles errores.
+- `-o obj/Producto.o`: Especifica la ruta y el nombre del archivo objeto de salida.
+
+### Paso 2: Crear la Librería Estática (`.a`)
+
+Una vez que tenemos los archivos objeto, los empaquetamos en una **librería estática**. Piensa en ella como un "archivo comprimido" (`.a` de *archive*) que contiene todo el código objeto de nuestra lógica de inventario.
+
+**Comando:**
+```bash
+ar rcs lib/libinventario.a obj/Producto.o obj/ListaInventario.o
+```
+
+**Explicación del comando:**
+- `ar`: Es la herramienta para crear y gestionar archivos de librería.
+- `rcs`: Son opciones:
+    - `r`: Inserta o reemplaza los archivos objeto en la librería.
+    - `c`: Crea la librería si no existe.
+    - `s`: Crea un índice de los símbolos dentro de la librería, lo que acelera el enlazado.
+- `lib/libinventario.a`: Es el nombre de nuestra librería. Por convención, empiezan con `lib` y terminan en `.a`.
+
+### Paso 3: Enlazar la Librería con un Programa Principal
+
+Ahora que tenemos nuestra librería, podemos usarla en `main.cpp`. El proceso de **enlazado** consiste en tomar el código objeto de `main.cpp` y unirlo con el código de la librería que necesita para funcionar.
+
+**Comando:**
+```bash
+g++ -Wall -g -std=c++11 -Iinclude main.cpp -Llib -linventario -o programa_inventario
+```
+
+**Explicación de los flags de enlazado:**
+- `main.cpp`: El archivo de nuestro programa principal.
+- `-Llib`: (`L` mayúscula) Le dice al enlazador que busque librerías en el directorio `lib/`.
+- `-linventario`: (`l` minúscula) Le dice al enlazador que busque y enlace la librería `inventario`. El enlazador automáticamente añade el prefijo `lib` y la extensión `.a`, buscando `libinventario.a`.
+- `-o programa_inventario`: Especifica el nombre de nuestro programa ejecutable final.
+
+### Paso 4: Ejecutar el Programa Final
+
+Después de un enlazado exitoso, se creará el archivo `programa_inventario`. Como el enlazado fue estático, este archivo es **autónomo** y no necesita `libinventario.a` para ejecutarse.
+
+**Comando:**
+```bash
+./programa_inventario
+```
+
+## Automatización con Makefile
+
+El `Makefile` que hemos creado automatiza todos los pasos anteriores.
+
+- **Para compilar todo y crear el ejecutable:**
+  Simplemente ejecuta `make`. `make` leerá el `Makefile`, determinará las dependencias y ejecutará los comandos necesarios en el orden correcto.
+  ```bash
+  make
+  ```
+
+- **Para limpiar todos los archivos generados:**
+  El objetivo `clean` eliminará el ejecutable y los directorios `lib/` y `obj/`.
+  ```bash
+  make clean
+  ```
